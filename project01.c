@@ -12,11 +12,10 @@ int main() {
 		char pwd[500];
 		getcwd(pwd, 500);
 		printf("pwd- %s", pwd);
-		int f = fork();
 		fgets(line, 1000, stdin);
 		if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
 		if (strcmp(line, "exit") == 0) return 0;
-		f = fork();
+		int f = fork();
 		if (!f) {
 			char * argv[1000];
 			int i = 0;
