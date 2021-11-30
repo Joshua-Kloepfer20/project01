@@ -49,7 +49,9 @@ int main() {
 			printf("pwd- %s  ", pwd);
 			fgets(line, 1000, stdin);
 			if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
-			if (strcmp(line, "exit") == 0) return 0;
+			if (strcmp(line, "exit") == 0) {
+				return 0;
+			}
 			total_arg = lineparse(&args, line, ";");
 		}
 		else {
@@ -80,7 +82,28 @@ int main() {
                 }
 		int f = fork();
 		if (!f) {
-			execvp(argv[0], argv);
+			char pipearg[500];
+			int pipefd[2];
+			for (i = 0; i < argc; i++) {
+				if (strcmp(argv[i], "|") == 0) {
+					strcpy(pipearg, argv[i-1]);
+					pipe(pipefd);
+					f = fork();
+					if (!f) {
+						printf("gets here\n");
+						dup2(pipefd[1], STDOUT_FILENO);
+						return execlp(pipearg, pipearg, NULL);
+					}
+					else {
+						dup2(pipefd[0], STDIN_FILENO);
+						argv[i] = "\0";
+						printf("parent gets here\n");
+					}
+				}
+			}
+			char buffer[500];
+			read(pipefd[0], buffer, 500);
+			return execlp("wc", "wc", buffer, NULL);
 		}
 		else {
 			waitpid(f, &status, 0);
