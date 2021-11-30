@@ -5,11 +5,12 @@
 #include <string.h>
 #include <sys/wait.h>
 
-int lineparse(char *** argv, char * line) {
+int lineparse(char *** argv, char * line, char * parse) {
 	*argv = malloc(1000);
 	int i = 0;
+	char * linecpy = line;
 	while (line != 0) {
-		(*argv)[i] = strsep(&line, " ");
+		(*argv)[i] = strsep(&line, parse);
 		if ((*argv)[i][strlen((*argv)[i]) - 1] == '\n') (*argv)[i][strlen((*argv)[i]) - 1] = '\0';
 		i++;
 	}
@@ -33,21 +34,33 @@ int check_redirect(char * type, char ** argv, int len) {
 }
 
 int main() {
-	char * line = malloc(1000);
+	char ** args = malloc(1000);
 	int status;
+	int total_arg = 0;
+	int curr_arg = 0;
 	while(1) {
-		char pwd[500];
-		getcwd(pwd, 500);
-		printf("pwd- %s\t", pwd);
-		fgets(line, 1000, stdin);
+		char * line = malloc(1000);
+		if (curr_arg >= total_arg - 1) {
+			free(args);
+			curr_arg = 0;
+			total_arg = 0;
+			char pwd[500];
+			getcwd(pwd, 500);
+			printf("pwd- %s\t", pwd);
+			fgets(line, 1000, stdin);
+			if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
+			if (strcmp(line, "exit") == 0) return 0;
+			total_arg = lineparse(&args, line, ";");
+		}
+		else {
+			curr_arg++;
+		}
 		char ** argv;
-		int argc = lineparse(&argv, line);
+		int argc = lineparse(&argv, args[curr_arg], " ");
 		char type;
 		int dupin;
 		int dupout;
-		if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
-		if (strcmp(line, "exit") == 0) return 0;
-		else if (strcmp(argv[0], "cd") == 0) chdir(argv[1]);
+		if (strcmp(argv[0], "cd") == 0) chdir(argv[1]);
 		int i;
                 if (i = check_redirect(&type, argv, argc)) {
                 	if (type == '<') {
@@ -67,7 +80,7 @@ int main() {
                 }
 		int f = fork();
 		if (!f) {
-			return execvp(argv[0], argv);
+			execvp(argv[0], argv);
 		}
 		else {
 			waitpid(f, &status, 0);
@@ -80,6 +93,5 @@ int main() {
 			free(argv);
 		}
 	}
-	free(line);
 	return 0;
 }
