@@ -46,7 +46,7 @@ int main() {
 			total_arg = 0;
 			char pwd[500];
 			getcwd(pwd, 500);
-			printf("pwd- %s\t", pwd);
+			printf("pwd- %s  ", pwd);
 			fgets(line, 1000, stdin);
 			if (line[strlen(line) - 1] == '\n') line[strlen(line) - 1] = '\0';
 			if (strcmp(line, "exit") == 0) return 0;
