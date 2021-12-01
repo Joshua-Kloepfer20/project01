@@ -7,6 +7,7 @@
 
 ## attempted
 - tab and arrow keys using ncurses
+- piping
 
 ## Noted bugs
 - I have not found any bugs

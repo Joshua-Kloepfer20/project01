@@ -4,34 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/wait.h>
-
-int lineparse(char *** argv, char * line, char * parse) {
-	*argv = malloc(1000);
-	int i = 0;
-	char * linecpy = line;
-	while (line != 0) {
-		(*argv)[i] = strsep(&line, parse);
-		if ((*argv)[i][strlen((*argv)[i]) - 1] == '\n') (*argv)[i][strlen((*argv)[i]) - 1] = '\0';
-		i++;
-	}
-	return i;
-}
-
-int check_redirect(char * type, char ** argv, int len) {
-	int i;
-	for (i = 0; i < len; i++) {
-		if (strcmp(argv[i], ">") == 0) {
-			*type = '>';
-			break;
-		}
-		else if (strcmp(argv[i], "<") == 0) {
-			*type = '<';
-			break;
-		}
-	}
-	if (i == len) return 0;
-	return i;
-}
+#include "functions.h"
 
 int main() {
 	char ** args = malloc(1000);
@@ -82,18 +55,7 @@ int main() {
                 }
 		int f = fork();
 		if (!f) {
-			char pipearg[500];
-			FILE * pipefd;
-			for (i = 0; i < argc; i++) {
-				if (strcmp(argv[i], "|") == 0) {
-					strcpy(pipearg, argv[i-1]);
-					pipefd = popen("ls", "r");
-				}
-			}
-			char arg[500];
-			fread(arg, 1, 500, pipefd);
-			pclose(pipefd);
-			return execlp("wc", "wc", arg, NULL);
+			return execvp(argv[0], argv);
 		}
 		else {
 			waitpid(f, &status, 0);
