@@ -83,27 +83,17 @@ int main() {
 		int f = fork();
 		if (!f) {
 			char pipearg[500];
-			int pipefd[2];
+			FILE * pipefd;
 			for (i = 0; i < argc; i++) {
 				if (strcmp(argv[i], "|") == 0) {
 					strcpy(pipearg, argv[i-1]);
-					pipe(pipefd);
-					f = fork();
-					if (!f) {
-						printf("gets here\n");
-						dup2(pipefd[1], STDOUT_FILENO);
-						return execlp(pipearg, pipearg, NULL);
-					}
-					else {
-						dup2(pipefd[0], STDIN_FILENO);
-						argv[i] = "\0";
-						printf("parent gets here\n");
-					}
+					pipefd = popen("ls", "r");
 				}
 			}
-			char buffer[500];
-			read(pipefd[0], buffer, 500);
-			return execlp("wc", "wc", buffer, NULL);
+			char arg[500];
+			fread(arg, 1, 500, pipefd);
+			pclose(pipefd);
+			return execlp("wc", "wc", arg, NULL);
 		}
 		else {
 			waitpid(f, &status, 0);
